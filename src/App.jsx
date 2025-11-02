@@ -7,7 +7,7 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObjec
 import { BeatLoader } from 'react-spinners';
 
 // --- 1. FIREBASE CONFIGURATION & INITIALIZATION ---
-// You MUST ensure these credentials are correct and that Firestore, Auth, and Storage are enabled in your Firebase project.
+// Ensure these credentials are correct and services (Auth, Firestore, Storage) are enabled.
 const firebaseConfig = {
   apiKey: "AIzaSyDtjAk21l9-fZkfNJciz2OOFNEfSR8-qJI",
   authDomain: "notems-poll.firebaseapp.com",
@@ -35,8 +35,13 @@ const AuthProvider = ({ children }) => {
       setUser(currentUser);
       if (currentUser) {
         // CRITICAL ADMIN CHECK: Checks if user's UID exists in the 'admins' collection
-        const adminDoc = await getDoc(doc(db, "admins", currentUser.uid));
-        setIsAdmin(adminDoc.exists());
+        try {
+          const adminDoc = await getDoc(doc(db, "admins", currentUser.uid));
+          setIsAdmin(adminDoc.exists());
+        } catch (e) {
+           console.error("Admin check failed, likely due to rules or network:", e);
+           setIsAdmin(false);
+        }
       } else {
         setIsAdmin(false);
       }
@@ -60,10 +65,49 @@ const useAuth = () => useContext(AuthContext);
 
 
 // --- 3. STYLES (Sleek Dark UI based on screenshots) ---
-const ACCENT_PURPLE = '#a020f0';
-const ACCENT_MAGENTA = '#c71585';
-const BACKGROUND_DARK = '#0a0a0a';
-const CARD_DARK = '#151515';
+const ACCENT_PURPLE = '#a020f0'; // Purple accent color
+const ACCENT_MAGENTA = '#c71585'; // Dark magenta for gradient
+const BACKGROUND_DARK = '#0a0a0a'; // Main background color
+const CARD_DARK = '#151515'; // Card background color
+
+// Base Style Objects (for reference)
+const baseStyles = {
+    inputField: {
+        width: '100%',
+        padding: '12px 15px',
+        borderRadius: '8px',
+        border: '1px solid #333',
+        background: BACKGROUND_DARK,
+        color: '#e0e0e0',
+        boxSizing: 'border-box',
+        fontSize: '16px',
+        outline: 'none',
+        transition: 'border-color 0.3s',
+        marginBottom: '20px', // Adjusted to base input field
+    },
+    primaryButton: {
+        width: '100%',
+        padding: '14px 20px',
+        borderRadius: '8px',
+        border: 'none',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        background: `linear-gradient(90deg, ${ACCENT_PURPLE}, ${ACCENT_MAGENTA})`,
+        color: '#ffffff',
+        boxShadow: `0 4px 10px rgba(160, 32, 240, 0.3)`,
+        transition: 'all 0.3s ease',
+        marginTop: '15px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    errorText: {
+        color: '#ff6b6b',
+        marginTop: '10px',
+        fontSize: '14px',
+    },
+};
 
 const styles = {
   appContainer: {
@@ -90,38 +134,10 @@ const styles = {
   },
   inputGroup: {
     width: '100%',
-    marginBottom: '20px',
     textAlign: 'left',
   },
-  inputField: {
-    width: '100%',
-    padding: '12px 15px',
-    borderRadius: '8px',
-    border: '1px solid #333',
-    background: BACKGROUND_DARK,
-    color: '#e0e0e0',
-    boxSizing: 'border-box',
-    fontSize: '16px',
-    outline: 'none',
-    transition: 'border-color 0.3s',
-  },
-  primaryButton: {
-    width: '100%',
-    padding: '14px 20px',
-    borderRadius: '8px',
-    border: 'none',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    background: `linear-gradient(90deg, ${ACCENT_PURPLE}, ${ACCENT_MAGENTA})`,
-    color: '#ffffff',
-    boxShadow: `0 4px 10px rgba(160, 32, 240, 0.3)`,
-    transition: 'all 0.3s ease',
-    marginTop: '15px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  inputField: baseStyles.inputField,
+  primaryButton: baseStyles.primaryButton,
   textLink: {
     marginTop: '20px',
     color: ACCENT_PURPLE,
@@ -131,12 +147,8 @@ const styles = {
     fontWeight: '600',
     transition: 'color 0.3s',
   },
-  errorText: {
-    color: '#ff6b6b',
-    marginTop: '10px',
-    fontSize: '14px',
-  },
-  
+  errorText: baseStyles.errorText,
+
   // Dashboard/Polls Styles
   studentDashboard: {
     maxWidth: '550px',
@@ -191,6 +203,23 @@ const styles = {
       textAlign: 'right',
     };
   },
+  loadingOverlay: {
+    position: 'fixed', 
+    top: 0, 
+    left: 0, 
+    width: '100%', 
+    height: '100%', 
+    background: 'rgba(0, 0, 0, 0.9)', 
+    backdropFilter: 'blur(5px)', 
+    display: 'flex', 
+    flexDirection: 'column', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    zIndex: 9999, 
+    color: ACCENT_PURPLE, 
+    fontSize: '24px', 
+    fontWeight: 'bold'
+  },
   
   // Admin Styles
   adminContainer: {
@@ -203,8 +232,7 @@ const styles = {
     minHeight: '80vh',
   },
   formInput: {
-    // Reuses inputField style
-    ...this.inputField,
+    ...baseStyles.inputField,
     marginBottom: 0,
   },
   fileInput: {
@@ -379,7 +407,7 @@ const AuthScreen = () => {
 
 // --- 5. PRIVATE ROUTE COMPONENTS ---
 const LoadingOverlay = ({ message }) => (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.9)', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', zIndex: 9999, color: ACCENT_PURPLE, fontSize: '24px', fontWeight: 'bold' }}>
+    <div style={styles.loadingOverlay}>
       <BeatLoader color={ACCENT_PURPLE} size={20} /> <p>{message}</p>
     </div>
 );
@@ -393,7 +421,8 @@ const PrivateRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
   if (loading) return <LoadingOverlay message="Loading Admin..." />;
-  if (!user || !isAdmin) return <Navigate to="/" />; 
+  // Redirect to student dashboard if logged in but not an admin
+  if (!user || !isAdmin) return <Navigate to="/student" />; 
   return children;
 };
 
@@ -462,8 +491,8 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
   };
 
   return (
-    <div style={styles.modalBackdrop || {position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000}}>
-      <div style={styles.modalContent || {width: '90%', maxWidth: '400px', background: BACKGROUND_DARK, padding: '30px', borderRadius: '20px', boxShadow: `0 10px 30px rgba(160, 32, 240, 0.5)`, textAlign: 'center'}}>
+    <div style={{position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000}}>
+      <div style={{width: '90%', maxWidth: '400px', background: BACKGROUND_DARK, padding: '30px', borderRadius: '20px', boxShadow: `0 10px 30px rgba(160, 32, 240, 0.5)`, textAlign: 'center'}}>
         <h2 style={{ color: ACCENT_PURPLE, borderBottom: '1px solid #333', paddingBottom: '10px' }}>Verify Your Vote</h2>
         <p style={{ color: '#ccc', margin: '20px 0' }}>
           Your vote has been cast but needs payment approval.
@@ -476,7 +505,7 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
         </div>
 
         <div 
-          style={styles.uploadBox || {border: '2px dashed #333', borderRadius: '15px', padding: '30px 20px', marginTop: '20px', textAlign: 'center', cursor: 'pointer'}}
+          style={{border: '2px dashed #333', borderRadius: '15px', padding: '30px 20px', marginTop: '20px', textAlign: 'center', cursor: 'pointer'}}
           onClick={() => document.getElementById('screenshot-upload').click()}
         >
           <div style={{fontSize: '40px', color: ACCENT_PURPLE, marginBottom: '10px'}}>📸</div>
@@ -773,7 +802,7 @@ const CreatePoll = ({ setAllPolls }) => {
             placeholder="E.g., Best AI of the Year"
             value={pollTitle}
             onChange={(e) => setPollTitle(e.target.value)}
-            style={styles.inputField}
+            style={{...styles.inputField, marginBottom: '20px'}}
             required
           />
         </div>
@@ -791,7 +820,7 @@ const CreatePoll = ({ setAllPolls }) => {
                 placeholder={`Candidate ${index + 1} Name`}
                 value={candidate.name}
                 onChange={(e) => handleCandidateNameChange(index, e.target.value)}
-                style={styles.inputField}
+                style={{...styles.inputField, marginBottom: 0}}
                 required
               />
 
@@ -1059,4 +1088,61 @@ const AdminPanel = () => {
           >
             Create Poll
           </button>
-          <button
+          <button 
+            style={{...styles.tabButton, ...(activeTab === 'list' && styles.tabButtonActive)}}
+            onClick={() => setActiveTab('list')}
+          >
+            Poll Results
+          </button>
+        </div>
+
+        {renderContent()}
+      </div>
+    </div>
+  );
+};
+
+
+// --- 8. MAIN APPLICATION COMPONENT & WRAPPER ---
+const App = () => {
+  const { user, isAdmin, loading } = useAuth();
+
+  // Determine the default route based on auth/role state
+  let defaultHome = '/';
+  if (user && isAdmin) {
+    defaultHome = '/admin';
+  } else if (user && !isAdmin) {
+    defaultHome = '/student';
+  } else {
+    defaultHome = '/login';
+  }
+
+  if (loading) {
+    return <LoadingOverlay message="Loading Application..." />;
+  }
+  
+  return (
+    <div style={styles.appContainer}>
+      <Routes>
+        <Route path="/" element={<Navigate to={defaultHome} replace />} />
+        <Route path="/login" element={user ? <Navigate to={isAdmin ? '/admin' : '/student'} replace /> : <AuthScreen />} />
+        
+        <Route path="/student" element={<PrivateRoute><StudentDashboard /></PrivateRoute>} />
+        
+        <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+
+        <Route path="*" element={<h1 style={{color: '#ff6b6b', textAlign: 'center', paddingTop: '100px'}}>404 Not Found</h1>} />
+      </Routes>
+    </div>
+  );
+};
+
+const Root = () => (
+  <Router>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </Router>
+);
+
+export default Root;
