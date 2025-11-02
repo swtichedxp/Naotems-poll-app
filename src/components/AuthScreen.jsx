@@ -1,248 +1,302 @@
 import React, { useState } from 'react';
-import { useAuth } from '../App'; // Assuming useAuth is exported from App.jsx or context file
-import { BeatLoader } from 'react-spinners';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  Image
+} from 'react-native';
+import { AntDesign } from '@expo/vector-icons'; // Assuming you use Expo/Vector Icons
 
-// --- UI Constants (New Dark/White Aesthetic) ---
-const ACCENT_WHITE = '#FFFFFF';
-const ACCENT_LIGHT_GRAY = '#E0E0E0';
-const BACKGROUND_DARK = '#0A0A0A'; // Deepest dark background
-const CARD_DARK = '#151515';       // Dark card background
-const BORDER_DARK = '#333333';     // Subtle border color
+const { width } = Dimensions.get('window');
 
-const styles = {
-    // --- Overall Split-Screen Layout ---
-    container: {
-        minHeight: '100vh',
-        display: 'flex',
-        background: BACKGROUND_DARK,
-        color: ACCENT_LIGHT_GRAY, // Default text color
-        fontFamily: 'system-ui, sans-serif',
-    },
-    // Left Side: Image Panel 
-    imagePanel: {
-        flex: 1,
-        display: window.innerWidth > 768 ? 'flex' : 'none', // Hide on mobile
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: '#222', // Subtle gray background for the panel
-    },
-    image: {
-        width: '80%',
-        maxWidth: '450px',
-        height: 'auto',
-        objectFit: 'contain',
-        borderRadius: '15px',
-        // Update: Use a white-based shadow instead of purple
-        boxShadow: `0 0 40px rgba(255, 255, 255, 0.4)`,
-    },
-    // Right Side: Form Panel 
-    formPanel: {
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '20px',
-    },
-    authBox: {
-        width: '100%',
-        maxWidth: '400px',
-        padding: '40px',
-        // Update: Darker card background
-        background: CARD_DARK,
-        borderRadius: '10px',
-        // Update: White glow for the card shadow
-        boxShadow: `0 10px 30px rgba(255, 255, 255, 0.08)`,
-        textAlign: 'center',
-    },
-    header: {
-        fontSize: '28px',
-        fontWeight: '700',
-        marginBottom: '30px',
-        color: ACCENT_WHITE, // White header
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '15px',
-        marginBottom: '20px',
-    },
-    inputField: {
-        padding: '12px 15px',
-        border: `1px solid ${BORDER_DARK}`, // Darker border
-        borderRadius: '5px',
-        fontSize: '16px',
-        background: BACKGROUND_DARK, // Very dark input background
-        color: ACCENT_LIGHT_GRAY,
-        outline: 'none',
-        transition: 'border-color 0.3s',
-    },
-    // Focus effect: border turns white
-    inputFieldFocus: {
-        borderColor: ACCENT_WHITE,
-        boxShadow: `0 0 0 1px ${ACCENT_WHITE}`,
-    },
-    // Update: Solid white background button with dark text
-    gradientButton: {
-        padding: '12px 20px',
-        border: 'none',
-        borderRadius: '5px',
-        fontSize: '16px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        // New: Solid white background, black/dark text
-        background: ACCENT_WHITE,
-        color: BACKGROUND_DARK, 
-        transition: 'opacity 0.3s, transform 0.1s',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    // Hover/Active effect
-    gradientButtonHover: {
-        opacity: 0.9,
-    },
-    gradientButtonActive: {
-        transform: 'scale(0.98)',
-    },
-    // Disabled state
-    gradientButtonDisabled: {
-        opacity: 0.5,
-        cursor: 'not-allowed',
-    },
-    // Update: Subtle light gray link
-    textLink: {
-        color: ACCENT_LIGHT_GRAY,
-        fontSize: '14px',
-        cursor: 'pointer',
-        marginTop: '15px',
-        display: 'block',
-        transition: 'color 0.3s',
-    },
-    // Hover for link
-    textLinkHover: {
-        color: ACCENT_WHITE,
-    },
-    errorText: {
-        color: '#ff6b6b', // Keep a standard error color
-        fontSize: '14px',
-        textAlign: 'center',
-        margin: '10px 0',
-    }
+// 1. Theme Colors and Constants
+const THEME = {
+  primary: '#000000', // Black for text/buttons
+  secondary: '#FFFFFF', // White for background elements
+  placeholder: '#a0a0a0',
+  inputBackground: 'rgba(255, 255, 255, 0.9)',
+  googleBackground: '#FFFFFF',
+  googleBorder: '#dcdcdc',
+  buttonPrimary: '#000000',
+  buttonText: '#FFFFFF',
+  link: '#3a7bd5',
+  gradientColors: ['#f0f0ff', '#ffe6f0', '#fff0e6'], // Simulating the soft pastel gradient
 };
+
+// 2. Custom Gradient/Background Component (Simulated with a single color for simplicity)
+// In a real project, you'd use a library like 'expo-linear-gradient' for the background
+const OtakeBackground = ({ children }) => (
+  <View style={styles.backgroundContainer}>
+    {/* This View simulates the soft, blurred pastel gradient background */}
+    <View style={styles.gradientOverlay} />
+    {children}
+  </View>
+);
 
 const AuthScreen = () => {
-    const [isLogin, setIsLogin] = useState(true);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const { signIn, register } = useAuth(); // Assuming useAuth provides signIn and register functions
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState(''); // Only for Sign Up
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+  const handleAuth = () => {
+    if (isLogin) {
+      console.log('Logging in with:', email, password);
+    } else {
+      console.log('Signing up with:', username, email, password);
+    }
+  };
 
-        try {
-            if (isLogin) {
-                await signIn(email, password);
-            } else {
-                // In a real app, you might add username or other fields for registration
-                await register(email, password);
-            }
-        } catch (err) {
-            console.error(err);
-            // Firebase error codes can be parsed for user-friendly messages
-            setError(err.message.replace('Firebase: Error ', ''));
-        } finally {
-            setLoading(false);
-        }
-    };
+  // Helper to switch the mode (Login/Sign Up)
+  const toggleAuthMode = () => {
+    setIsLogin(prev => !prev);
+  };
 
-    // Helper for input focus state (for visual feedback)
-    const [emailFocused, setEmailFocused] = useState(false);
-    const [passwordFocused, setPasswordFocused] = useState(false);
-    
-    // Inline styling to handle hover/focus/active states for a purely CSS-in-JS environment
-    const getButtonStyle = (disabled) => ({
-        ...styles.gradientButton,
-        ...(disabled && styles.gradientButtonDisabled),
-        // Add pseudo-class support by checking current interaction state if possible,
-        // but for simplicity in this structure, we rely on the disabled state.
-    });
+  const GoogleButton = () => (
+    <TouchableOpacity style={styles.googleButton}>
+      <AntDesign name="google" size={20} color={THEME.primary} />
+      <Text style={styles.googleButtonText}>
+        Continue with Google
+      </Text>
+    </TouchableOpacity>
+  );
 
-    return (
-        <div style={styles.container}>
-            <div style={styles.imagePanel}>
-                <img 
-                    src={process.env.PUBLIC_URL + '/image.png'} 
-                    alt="Poll Application Visual" 
-                    style={styles.image}
-                />
-            </div>
-            <div style={styles.formPanel}>
-                <div style={styles.authBox}>
-                    <h2 style={styles.header}>
-                        {isLogin ? 'WELCOME BACK' : 'CREATE ACCOUNT'}
-                    </h2>
-                    <form onSubmit={handleSubmit} style={styles.form}>
-                        <input
-                            type="email"
-                            placeholder="Email Address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            // Combine base style with focus style
-                            style={{
-                                ...styles.inputField,
-                                ...(emailFocused && styles.inputFieldFocus)
-                            }}
-                            onFocus={() => setEmailFocused(true)}
-                            onBlur={() => setEmailFocused(false)}
-                            required
-                        />
+  const AuthForm = () => (
+    <View style={styles.authContainer}>
+      <View style={styles.headerPill}>
+        <Text style={styles.headerPillText}>Otake Login</Text>
+      </View>
+      <Text style={styles.welcomeText}>Welcome Otake!</Text>
 
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            // Combine base style with focus style
-                            style={{
-                                ...styles.inputField,
-                                ...(passwordFocused && styles.inputFieldFocus)
-                            }}
-                            onFocus={() => setPasswordFocused(true)}
-                            onBlur={() => setPasswordFocused(false)}
-                            required
-                        />
+      {/* --- FORM CARDS --- */}
+      <View style={styles.card}>
+        {!isLogin && (
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            placeholderTextColor={THEME.placeholder}
+            value={username}
+            onChangeText={setUsername}
+          />
+        )}
+        <Text style={styles.inputLabel}>Email Address</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="batuhankra312@gmail.co" // Placeholder matches image
+          placeholderTextColor={THEME.placeholder}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
 
-                        {error && <p style={styles.errorText}>{error}</p>}
+        <Text style={styles.inputLabel}>Password</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="••••••••••" // Placeholder matches image
+          placeholderTextColor={THEME.placeholder}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-                        <button
-                            type="submit"
-                            style={getButtonStyle(loading)}
-                            disabled={loading}
-                            // Inline pseudo-class support for hover/active could be added 
-                            // using onMouseOver/onMouseOut/onMouseDown/onMouseUp
-                            // but is often complex in pure inline styles. We'll rely on 
-                            // the change of the background and text color for the main UI change.
-                        >
-                            {loading ? <BeatLoader size={10} color={BACKGROUND_DARK} /> : `${isLogin ? 'SIGN IN' : 'REGISTER'}`}
-                        </button>
-                    </form>
+        <View style={styles.rowBetween}>
+          <TouchableOpacity
+            style={styles.rememberMe}
+            onPress={() => console.log('Toggled Remember Me')}
+          >
+            <View style={styles.checkbox}></View>
+            <Text style={styles.forgotText}>Remember me</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => console.log('Forgot Password Pressed')}>
+            <Text style={styles.forgotText}>Forgot password?</Text>
+          </TouchableOpacity>
+        </View>
 
-                    <span
-                        style={styles.textLink}
-                        onClick={() => setIsLogin(!isLogin)}
-                        // Note: Real-world applications should use a standard button 
-                        // or link tag for better accessibility.
-                    >
-                        {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
-                    </span>
-                </div>
-            </div>
-        </div>
-    );
+        {/* --- Primary Action Button --- */}
+        <TouchableOpacity style={styles.mainButton} onPress={handleAuth}>
+          <Text style={styles.mainButtonText}>
+            {isLogin ? 'Log In' : 'Create an Account'}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={styles.orText}>or</Text>
+
+        {/* --- Google Button --- */}
+        <GoogleButton />
+      </View>
+      {/* --- Footer Switch (Log In / Create an Account) --- */}
+      <TouchableOpacity onPress={toggleAuthMode} style={styles.switchButton}>
+        <Text style={styles.switchButtonText}>
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <Text style={styles.linkText}>
+            {isLogin ? 'Sign Up' : 'Log In'}
+          </Text>
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <OtakeBackground>
+      <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
+          <AuthForm />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </OtakeBackground>
+  );
 };
+
+const styles = StyleSheet.create({
+  backgroundContainer: {
+    flex: 1,
+    backgroundColor: THEME.gradientColors[0], // Base color if gradient library is not used
+  },
+  gradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    // In a real app, use expo-linear-gradient here for the full effect
+    backgroundColor: THEME.gradientColors[0],
+    opacity: 1, // Full opacity for the simulated background
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  authContainer: {
+    width: width * 0.9,
+    maxWidth: 400,
+    alignItems: 'center',
+    paddingTop: 30,
+    paddingBottom: 20,
+  },
+  headerPill: {
+    backgroundColor: THEME.gradientColors[1],
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 10,
+    borderColor: '#ffddf0',
+    borderWidth: 1,
+  },
+  headerPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: THEME.primary,
+  },
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: THEME.primary,
+    marginBottom: 30,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: THEME.secondary,
+    borderRadius: 20,
+    padding: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+    elevation: 5,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: THEME.primary,
+    fontWeight: '500',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  input: {
+    height: 50,
+    backgroundColor: THEME.inputBackground,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: THEME.googleBorder,
+    marginBottom: 10,
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 5,
+    marginBottom: 20,
+  },
+  rememberMe: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    height: 18,
+    width: 18,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: THEME.placeholder,
+    marginRight: 8,
+  },
+  forgotText: {
+    fontSize: 14,
+    color: THEME.placeholder,
+  },
+  mainButton: {
+    height: 50,
+    backgroundColor: THEME.buttonPrimary,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  mainButtonText: {
+    color: THEME.buttonText,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  orText: {
+    textAlign: 'center',
+    color: THEME.placeholder,
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  googleButton: {
+    height: 50,
+    backgroundColor: THEME.googleBackground,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: THEME.googleBorder,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  googleButtonText: {
+    color: THEME.primary,
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 10,
+  },
+  switchButton: {
+    marginTop: 20,
+  },
+  switchButtonText: {
+    fontSize: 14,
+    color: THEME.placeholder,
+  },
+  linkText: {
+    color: THEME.link,
+    fontWeight: '600',
+  },
+});
 
 export default AuthScreen;
