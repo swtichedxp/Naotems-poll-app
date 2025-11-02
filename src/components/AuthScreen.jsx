@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useAuth } from '../App'; // Assuming useAuth is exported from App.jsx or context file
 import { BeatLoader } from 'react-spinners';
 
-// --- UI Constants (Matching the Sleek Dark Aesthetic) ---
-const ACCENT_PURPLE = '#a020f0';
-const ACCENT_MAGENTA = '#c71585';
-const BACKGROUND_DARK = '#0a0a0a';
-const CARD_DARK = '#151515';
+// --- UI Constants (New Dark/White Aesthetic) ---
+const ACCENT_WHITE = '#FFFFFF';
+const ACCENT_LIGHT_GRAY = '#E0E0E0';
+const BACKGROUND_DARK = '#0A0A0A'; // Deepest dark background
+const CARD_DARK = '#151515';       // Dark card background
+const BORDER_DARK = '#333333';     // Subtle border color
 
 const styles = {
     // --- Overall Split-Screen Layout ---
@@ -14,10 +15,10 @@ const styles = {
         minHeight: '100vh',
         display: 'flex',
         background: BACKGROUND_DARK,
-        color: '#e0e0e0',
+        color: ACCENT_LIGHT_GRAY, // Default text color
         fontFamily: 'system-ui, sans-serif',
     },
-    // Left Side: Image Panel (Hidden on small screens)
+    // Left Side: Image Panel 
     imagePanel: {
         flex: 1,
         display: window.innerWidth > 768 ? 'flex' : 'none', // Hide on mobile
@@ -31,9 +32,10 @@ const styles = {
         height: 'auto',
         objectFit: 'contain',
         borderRadius: '15px',
-        boxShadow: `0 0 40px rgba(160, 32, 240, 0.4)`,
+        // Update: Use a white-based shadow instead of purple
+        boxShadow: `0 0 40px rgba(255, 255, 255, 0.4)`,
     },
-    // Right Side: Form Panel (Full width on small screens)
+    // Right Side: Form Panel 
     formPanel: {
         flex: 1,
         display: 'flex',
@@ -41,140 +43,161 @@ const styles = {
         alignItems: 'center',
         padding: '20px',
     },
-    authCard: {
+    authBox: {
         width: '100%',
         maxWidth: '400px',
-        padding: '30px',
-        borderRadius: '15px',
+        padding: '40px',
+        // Update: Darker card background
         background: CARD_DARK,
-        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.7)',
+        borderRadius: '10px',
+        // Update: White glow for the card shadow
+        boxShadow: `0 10px 30px rgba(255, 255, 255, 0.08)`,
         textAlign: 'center',
-        border: '1px solid #333',
     },
-    // --- Form Elements ---
-    inputField: {
-        width: '100%',
-        padding: '12px 15px',
-        borderRadius: '8px',
-        border: '1px solid #333',
-        background: BACKGROUND_DARK,
-        color: '#e0e0e0',
-        boxSizing: 'border-box',
-        fontSize: '16px',
-        outline: 'none',
+    header: {
+        fontSize: '28px',
+        fontWeight: '700',
+        marginBottom: '30px',
+        color: ACCENT_WHITE, // White header
+    },
+    form: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '15px',
         marginBottom: '20px',
     },
+    inputField: {
+        padding: '12px 15px',
+        border: `1px solid ${BORDER_DARK}`, // Darker border
+        borderRadius: '5px',
+        fontSize: '16px',
+        background: BACKGROUND_DARK, // Very dark input background
+        color: ACCENT_LIGHT_GRAY,
+        outline: 'none',
+        transition: 'border-color 0.3s',
+    },
+    // Focus effect: border turns white
+    inputFieldFocus: {
+        borderColor: ACCENT_WHITE,
+        boxShadow: `0 0 0 1px ${ACCENT_WHITE}`,
+    },
+    // Update: Solid white background button with dark text
     gradientButton: {
-        width: '100%',
-        padding: '14px 20px',
-        borderRadius: '8px',
+        padding: '12px 20px',
         border: 'none',
+        borderRadius: '5px',
         fontSize: '16px',
         fontWeight: 'bold',
         cursor: 'pointer',
-        // --- Gradient Style Requirement ---
-        background: `linear-gradient(90deg, ${ACCENT_PURPLE}, ${ACCENT_MAGENTA})`,
-        color: '#ffffff',
-        boxShadow: `0 4px 10px rgba(160, 32, 240, 0.3)`,
-        transition: 'all 0.3s ease',
-        marginTop: '15px',
+        // New: Solid white background, black/dark text
+        background: ACCENT_WHITE,
+        color: BACKGROUND_DARK, 
+        transition: 'opacity 0.3s, transform 0.1s',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
     },
+    // Hover/Active effect
+    gradientButtonHover: {
+        opacity: 0.9,
+    },
+    gradientButtonActive: {
+        transform: 'scale(0.98)',
+    },
+    // Disabled state
+    gradientButtonDisabled: {
+        opacity: 0.5,
+        cursor: 'not-allowed',
+    },
+    // Update: Subtle light gray link
     textLink: {
-        marginTop: '20px',
-        color: ACCENT_PURPLE,
+        color: ACCENT_LIGHT_GRAY,
+        fontSize: '14px',
         cursor: 'pointer',
-        textDecoration: 'none',
-        fontSize: '15px',
-        fontWeight: '600',
+        marginTop: '15px',
+        display: 'block',
         transition: 'color 0.3s',
     },
-    errorText: {
-        color: '#ff6b6b',
-        marginTop: '10px',
-        fontSize: '14px',
+    // Hover for link
+    textLinkHover: {
+        color: ACCENT_WHITE,
     },
+    errorText: {
+        color: '#ff6b6b', // Keep a standard error color
+        fontSize: '14px',
+        textAlign: 'center',
+        margin: '10px 0',
+    }
 };
 
 const AuthScreen = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
-    const [matricNumber, setMatricNumber] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const { signIn, register } = useAuth(); // Assuming useAuth provides signIn and register functions
 
-    // NOTE: This assumes 'useAuth' is accessible via import.
-    // We will ensure 'useAuth' is properly exported in the next step (App.jsx cleanup).
-    const { login, signup } = useAuth(); 
-
-    const handleAuth = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setLoading(true);
-
-        if (!email || !password || (!isLogin && !matricNumber)) {
-            setError('All fields are required.');
-            setLoading(false);
-            return;
-        }
+        setError('');
 
         try {
             if (isLogin) {
-                await login(email, password);
+                await signIn(email, password);
             } else {
-                const userCredential = await signup(email, password);
-                const user = userCredential.user;
-                
-                // Assuming Firestore logic from previous step is needed for registration
-                // (You'll integrate this part into your actual App.jsx logic flow)
-                // await setDoc(doc(db, "users", user.uid), { ... }); 
+                // In a real app, you might add username or other fields for registration
+                await register(email, password);
             }
         } catch (err) {
             console.error(err);
-            setError('Authentication failed. Check credentials/network.');
+            // Firebase error codes can be parsed for user-friendly messages
+            setError(err.message.replace('Firebase: Error ', ''));
         } finally {
             setLoading(false);
         }
     };
 
+    // Helper for input focus state (for visual feedback)
+    const [emailFocused, setEmailFocused] = useState(false);
+    const [passwordFocused, setPasswordFocused] = useState(false);
+    
+    // Inline styling to handle hover/focus/active states for a purely CSS-in-JS environment
+    const getButtonStyle = (disabled) => ({
+        ...styles.gradientButton,
+        ...(disabled && styles.gradientButtonDisabled),
+        // Add pseudo-class support by checking current interaction state if possible,
+        // but for simplicity in this structure, we rely on the disabled state.
+    });
+
     return (
         <div style={styles.container}>
-            {/* Left Side: Image Panel */}
             <div style={styles.imagePanel}>
-                <img src="/image.png" alt="NAOTEMS Poll Banner" style={styles.image} />
+                <img 
+                    src={process.env.PUBLIC_URL + '/image.png'} 
+                    alt="Poll Application Visual" 
+                    style={styles.image}
+                />
             </div>
-
-            {/* Right Side: Form Panel */}
             <div style={styles.formPanel}>
-                <div style={styles.authCard}>
-                    <h1 style={{fontSize: '32px', color: ACCENT_PURPLE, marginBottom: '5px'}}>
-                        {isLogin ? 'WELCOME BACK' : 'JOIN THE VOTE'}
-                    </h1>
-                    <p style={{color: '#aaa', marginBottom: '30px', fontSize: '14px'}}>
-                        {isLogin ? 'Sign in to cast your vote.' : 'Register using your details.'}
-                    </p>
-
-                    <form onSubmit={handleAuth}>
-                        {!isLogin && (
-                            <input
-                                type="text"
-                                placeholder="Matric Number"
-                                value={matricNumber}
-                                onChange={(e) => setMatricNumber(e.target.value)}
-                                style={styles.inputField}
-                                required={!isLogin}
-                            />
-                        )}
-
+                <div style={styles.authBox}>
+                    <h2 style={styles.header}>
+                        {isLogin ? 'WELCOME BACK' : 'CREATE ACCOUNT'}
+                    </h2>
+                    <form onSubmit={handleSubmit} style={styles.form}>
                         <input
                             type="email"
                             placeholder="Email Address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            style={styles.inputField}
+                            // Combine base style with focus style
+                            style={{
+                                ...styles.inputField,
+                                ...(emailFocused && styles.inputFieldFocus)
+                            }}
+                            onFocus={() => setEmailFocused(true)}
+                            onBlur={() => setEmailFocused(false)}
                             required
                         />
 
@@ -183,7 +206,13 @@ const AuthScreen = () => {
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={styles.inputField}
+                            // Combine base style with focus style
+                            style={{
+                                ...styles.inputField,
+                                ...(passwordFocused && styles.inputFieldFocus)
+                            }}
+                            onFocus={() => setPasswordFocused(true)}
+                            onBlur={() => setPasswordFocused(false)}
                             required
                         />
 
@@ -191,16 +220,22 @@ const AuthScreen = () => {
 
                         <button
                             type="submit"
-                            style={styles.gradientButton}
+                            style={getButtonStyle(loading)}
                             disabled={loading}
+                            // Inline pseudo-class support for hover/active could be added 
+                            // using onMouseOver/onMouseOut/onMouseDown/onMouseUp
+                            // but is often complex in pure inline styles. We'll rely on 
+                            // the change of the background and text color for the main UI change.
                         >
-                            {loading ? <BeatLoader size={10} color="#ffffff" /> : `${isLogin ? 'SIGN IN' : 'REGISTER'}`}
+                            {loading ? <BeatLoader size={10} color={BACKGROUND_DARK} /> : `${isLogin ? 'SIGN IN' : 'REGISTER'}`}
                         </button>
                     </form>
 
                     <span
                         style={styles.textLink}
                         onClick={() => setIsLogin(!isLogin)}
+                        // Note: Real-world applications should use a standard button 
+                        // or link tag for better accessibility.
                     >
                         {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
                     </span>
