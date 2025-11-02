@@ -34,12 +34,11 @@ const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // CRITICAL ADMIN CHECK: Checks if user's UID exists in the 'admins' collection
         try {
           const adminDoc = await getDoc(doc(db, "admins", currentUser.uid));
           setIsAdmin(adminDoc.exists());
         } catch (e) {
-           console.error("Admin check failed, likely due to rules or network:", e);
+           console.error("Admin check failed:", e);
            setIsAdmin(false);
         }
       } else {
@@ -61,55 +60,18 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-const useAuth = () => useContext(AuthContext);
+// EXPORT useAuth so other components can use it
+export const useAuth = () => useContext(AuthContext);
 
 
-// --- 3. STYLES (Sleek Dark UI based on screenshots) ---
+// --- 3. STYLES (Sleek Dark UI based on requirements) ---
 const ACCENT_PURPLE = '#a020f0'; // Purple accent color
 const ACCENT_MAGENTA = '#c71585'; // Dark magenta for gradient
 const BACKGROUND_DARK = '#0a0a0a'; // Main background color
 const CARD_DARK = '#151515'; // Card background color
 
-// Base Style Objects (for reference)
-const baseStyles = {
-    inputField: {
-        width: '100%',
-        padding: '12px 15px',
-        borderRadius: '8px',
-        border: '1px solid #333',
-        background: BACKGROUND_DARK,
-        color: '#e0e0e0',
-        boxSizing: 'border-box',
-        fontSize: '16px',
-        outline: 'none',
-        transition: 'border-color 0.3s',
-        marginBottom: '20px', // Adjusted to base input field
-    },
-    primaryButton: {
-        width: '100%',
-        padding: '14px 20px',
-        borderRadius: '8px',
-        border: 'none',
-        fontSize: '16px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        background: `linear-gradient(90deg, ${ACCENT_PURPLE}, ${ACCENT_MAGENTA})`,
-        color: '#ffffff',
-        boxShadow: `0 4px 10px rgba(160, 32, 240, 0.3)`,
-        transition: 'all 0.3s ease',
-        marginTop: '15px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    errorText: {
-        color: '#ff6b6b',
-        marginTop: '10px',
-        fontSize: '14px',
-    },
-};
-
 const styles = {
+  // Base Styles
   appContainer: {
     minHeight: '100vh',
     background: BACKGROUND_DARK,
@@ -120,24 +82,43 @@ const styles = {
     boxSizing: 'border-box',
     overflowX: 'hidden',
   },
+  errorText: {
+    color: '#ff6b6b',
+    marginTop: '10px',
+    fontSize: '14px',
+  },
   
-  // Login/Auth Styles
-  authContainer: {
-    maxWidth: '400px',
-    margin: '60px auto 20px auto',
-    padding: '30px',
-    borderRadius: '15px',
-    background: CARD_DARK,
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.7)',
-    textAlign: 'center',
-    border: '1px solid #333',
-  },
-  inputGroup: {
+  // Reusable Form Elements
+  inputField: {
     width: '100%',
-    textAlign: 'left',
+    padding: '12px 15px',
+    borderRadius: '8px',
+    border: '1px solid #333',
+    background: BACKGROUND_DARK,
+    color: '#e0e0e0',
+    boxSizing: 'border-box',
+    fontSize: '16px',
+    outline: 'none',
+    transition: 'border-color 0.3s',
+    marginBottom: '20px', 
   },
-  inputField: baseStyles.inputField,
-  primaryButton: baseStyles.primaryButton,
+  primaryButton: {
+    width: '100%',
+    padding: '14px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    background: `linear-gradient(90deg, ${ACCENT_PURPLE}, ${ACCENT_MAGENTA})`, // Gradient Button
+    color: '#ffffff',
+    boxShadow: `0 4px 10px rgba(160, 32, 240, 0.3)`,
+    transition: 'all 0.3s ease',
+    marginTop: '15px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   textLink: {
     marginTop: '20px',
     color: ACCENT_PURPLE,
@@ -147,9 +128,47 @@ const styles = {
     fontWeight: '600',
     transition: 'color 0.3s',
   },
-  errorText: baseStyles.errorText,
 
-  // Dashboard/Polls Styles
+  // --- Login/Auth Specific Styles (Split-Screen) ---
+  authLayout: {
+    minHeight: '100vh',
+    display: 'flex',
+    background: BACKGROUND_DARK,
+  },
+  imagePanel: {
+    flex: 1,
+    display: window.innerWidth > 768 ? 'flex' : 'none', // Hide on mobile
+    justifyContent: 'center',
+    alignItems: 'center',
+    background: '#222', 
+  },
+  image: {
+    width: '80%',
+    maxWidth: '450px',
+    height: 'auto',
+    objectFit: 'contain',
+    borderRadius: '15px',
+    boxShadow: `0 0 40px rgba(160, 32, 240, 0.4)`,
+  },
+  formPanel: {
+    flex: 1,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+  },
+  authCard: {
+    width: '100%',
+    maxWidth: '400px',
+    padding: '30px',
+    borderRadius: '15px',
+    background: CARD_DARK,
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.7)',
+    textAlign: 'center',
+    border: '1px solid #333',
+  },
+
+  // Dashboard/Polls Styles (Kept for continuity)
   studentDashboard: {
     maxWidth: '550px',
     margin: '20px auto',
@@ -221,7 +240,7 @@ const styles = {
     fontWeight: 'bold'
   },
   
-  // Admin Styles
+  // Admin Styles (Kept for continuity)
   adminContainer: {
     maxWidth: '600px',
     margin: '20px auto',
@@ -230,10 +249,6 @@ const styles = {
     background: CARD_DARK,
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
     minHeight: '80vh',
-  },
-  formInput: {
-    ...baseStyles.inputField,
-    marginBottom: 0,
   },
   fileInput: {
     display: 'none', 
@@ -284,7 +299,7 @@ const styles = {
   },
 };
 
-// --- 4. LOGIN / SIGNUP COMPONENT ---
+// --- 4. LOGIN / SIGNUP COMPONENT (Updated Split-Screen UI) ---
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -337,69 +352,74 @@ const AuthScreen = () => {
       setLoading(false);
     }
   };
-  
-  const buttonStyle = styles.primaryButton;
 
   return (
-    <div style={styles.authContainer}>
-      <h1 style={{fontSize: '30px', color: ACCENT_PURPLE}}>{isLogin ? 'SIGN IN' : 'SIGN UP'}</h1>
-      <p style={{color: '#aaa', marginBottom: '30px'}}>
-        Welcome to the NAOTEMS Voting System.
-      </p>
-
-      <form style={{ width: '100%' }} onSubmit={handleAuth}>
-        {!isLogin && (
-          <div style={styles.inputGroup}>
-            <input
-              type="text"
-              placeholder="Matric Number"
-              value={matricNumber}
-              onChange={(e) => setMatricNumber(e.target.value)}
-              style={styles.inputField}
-              required={!isLogin}
-            />
-          </div>
-        )}
-
-        <div style={styles.inputGroup}>
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.inputField}
-            required
-          />
+    <div style={styles.authLayout}>
+        {/* Left Side: Image Panel */}
+        <div style={styles.imagePanel}>
+            {/* The image on the left will be image.png (must be in the /public folder) */}
+            <img src="/image.png" alt="NAOTEMS Poll Banner" style={styles.image} />
         </div>
 
-        <div style={styles.inputGroup}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.inputField}
-            required
-          />
+        {/* Right Side: Form Panel */}
+        <div style={styles.formPanel}>
+            <div style={styles.authCard}>
+                <h1 style={{fontSize: '32px', color: ACCENT_PURPLE, marginBottom: '5px'}}>
+                    {isLogin ? 'WELCOME BACK' : 'JOIN THE VOTE'}
+                </h1>
+                <p style={{color: '#aaa', marginBottom: '30px', fontSize: '14px'}}>
+                    {isLogin ? 'Sign in to cast your vote.' : 'Register using your details.'}
+                </p>
+
+                <form style={{ width: '100%' }} onSubmit={handleAuth}>
+                    {!isLogin && (
+                        <input
+                            type="text"
+                            placeholder="Matric Number"
+                            value={matricNumber}
+                            onChange={(e) => setMatricNumber(e.target.value)}
+                            style={styles.inputField}
+                            required={!isLogin}
+                        />
+                    )}
+
+                    <input
+                        type="email"
+                        placeholder="Email Address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        style={styles.inputField}
+                        required
+                    />
+
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        style={styles.inputField}
+                        required
+                    />
+
+                    {error && <p style={styles.errorText}>{error}</p>}
+
+                    <button
+                        type="submit"
+                        style={styles.primaryButton}
+                        disabled={loading}
+                    >
+                        {loading ? <BeatLoader size={10} color="#ffffff" /> : `${isLogin ? 'SIGN IN' : 'REGISTER'}`}
+                    </button>
+                </form>
+
+                <span
+                    style={styles.textLink}
+                    onClick={() => setIsLogin(!isLogin)}
+                >
+                    {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
+                </span>
+            </div>
         </div>
-
-        {error && <p style={styles.errorText}>{error}</p>}
-
-        <button
-          type="submit"
-          style={buttonStyle}
-          disabled={loading}
-        >
-          {loading ? <BeatLoader size={10} color="#ffffff" /> : `${isLogin ? 'SIGN IN' : 'REGISTER'}`}
-        </button>
-      </form>
-
-      <span
-        style={styles.textLink}
-        onClick={() => setIsLogin(!isLogin)}
-      >
-        {isLogin ? 'Create a New Account' : 'Already have an account? Sign In'}
-      </span>
     </div>
   );
 };
@@ -421,7 +441,6 @@ const PrivateRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
   if (loading) return <LoadingOverlay message="Loading Admin..." />;
-  // Redirect to student dashboard if logged in but not an admin
   if (!user || !isAdmin) return <Navigate to="/student" />; 
   return children;
 };
@@ -462,7 +481,6 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
     setError('');
 
     try {
-      // Use Firebase Storage for screenshot upload
       const filePath = `payments/${studentId}_${pollId}_${Date.now()}`;
       const imageStorageRef = storageRef(storage, filePath);
       const uploadResult = await uploadBytes(imageStorageRef, screenshotFile);
@@ -472,10 +490,10 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
       await updateDoc(userDocRef, {
         [`votedPolls.${pollId}`]: {
           candidateId: candidateId,
-          status: 'pending_approval', // Admin must approve this
+          status: 'pending_approval', 
           timestamp: new Date(),
           screenshotURL: screenshotURL,
-          storagePath: filePath, // Keep path for deletion after approval
+          storagePath: filePath, 
         }
       });
       
@@ -554,13 +572,11 @@ const StudentDashboard = () => {
   useEffect(() => {
     if (!user) return;
     
-    // Fetch initial user data and active polls
     const fetchData = async () => {
       try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         setUserData(userDoc.exists() ? userDoc.data() : { votedPolls: {} });
 
-        // Only fetch active polls
         const pollsSnapshot = await getDocs(query(collection(db, "polls"), where("status", "==", "active")));
         setActivePolls(pollsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (e) {
@@ -571,7 +587,6 @@ const StudentDashboard = () => {
     };
     fetchData();
 
-    // Set up real-time listener for user data (for immediate status updates)
     const userDocRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
         if (docSnap.exists()) {
@@ -651,7 +666,6 @@ const StudentDashboard = () => {
                 {poll.candidates.map(candidate => (
                   <div
                     key={candidate.id}
-                    // Poll Details View: Click to vote if not approved/pending approval
                     style={styles.candidateItem(votedCandidateId === candidate.id)}
                     onClick={() => handleVoteClick(poll.id, candidate.id)}
                   >
@@ -758,7 +772,6 @@ const CreatePoll = ({ setAllPolls }) => {
         const imagePath = `polls/${pollId}/${candidateId}/${candidate.imageFile.name}`;
         const imageStorageRef = storageRef(storage, imagePath);
         
-        // Upload image to Firebase Storage
         const uploadResult = await uploadBytes(imageStorageRef, candidate.imageFile);
         const imageURL = await getDownloadURL(uploadResult.ref);
         
@@ -766,7 +779,7 @@ const CreatePoll = ({ setAllPolls }) => {
           id: candidateId,
           name: candidate.name.trim(),
           imageURL: imageURL,
-          votes: 0, // Initial approved votes
+          votes: 0,
           storagePath: imagePath,
         });
       }
@@ -795,7 +808,7 @@ const CreatePoll = ({ setAllPolls }) => {
     <div style={{ padding: '20px' }}>
       <h3 style={{ color: '#e0e0e0', marginBottom: '20px' }}>Create New Poll</h3>
       <form onSubmit={handleSavePoll}>
-        <div style={styles.inputGroup}>
+        <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{display: 'block', marginBottom: '8px', fontWeight: '600'}}>Poll Title (Question)</label>
           <input
             type="text"
@@ -807,7 +820,7 @@ const CreatePoll = ({ setAllPolls }) => {
           />
         </div>
 
-        <div style={styles.inputGroup}>
+        <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{display: 'block', marginBottom: '8px', fontWeight: '600'}}>Candidates (Option & Picture)</label>
           {candidates.map((candidate, index) => (
             <div key={index} style={{display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center'}}>
@@ -875,7 +888,6 @@ const PaymentApproval = ({ allPolls }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Real-time listener on the users collection to find pending payments
     const usersColRef = collection(db, "users");
     const unsubscribe = onSnapshot(usersColRef, (snapshot) => {
         const pendingList = [];
@@ -904,7 +916,6 @@ const PaymentApproval = ({ allPolls }) => {
                 }
             });
         });
-        // Sort by oldest first
         setPendingVotes(pendingList.sort((a, b) => a.timestamp - b.timestamp));
         setLoading(false);
     }, (error) => {
@@ -913,14 +924,13 @@ const PaymentApproval = ({ allPolls }) => {
     });
 
     return () => unsubscribe(); 
-  }, [allPolls]); // Re-run if poll list changes
+  }, [allPolls]);
   
   const handleApproval = async (vote, isApproved) => {
     const { userId, pollId, candidateId, storagePath } = vote;
     const newStatus = isApproved ? 'approved' : 'rejected';
     
     try {
-        // 1. Update the user's vote status
         const userDocRef = doc(db, "users", userId);
         await updateDoc(userDocRef, {
             [`votedPolls.${pollId}.status`]: newStatus,
@@ -928,7 +938,6 @@ const PaymentApproval = ({ allPolls }) => {
             [`votedPolls.${pollId}.storagePath`]: null,
         });
         
-        // 2. If approved, increment the poll's vote count
         if (isApproved) {
             const pollDocRef = doc(db, "polls", pollId);
             const pollDoc = await getDoc(pollDocRef);
@@ -941,7 +950,6 @@ const PaymentApproval = ({ allPolls }) => {
             await updateDoc(pollDocRef, { candidates: updatedCandidates });
         }
         
-        // 3. Delete the payment screenshot from Storage
         if (storagePath) {
             const fileRef = storageRef(storage, storagePath);
             await deleteObject(fileRef).catch(e => console.warn("Could not delete storage file:", e));
@@ -1005,7 +1013,6 @@ const PollList = ({ allPolls }) => {
       ) : (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {allPolls.map(poll => {
-            // Find the winner (highest votes)
             const sortedCandidates = poll.candidates.sort((a, b) => b.votes - a.votes);
             const totalVotes = poll.candidates.reduce((sum, c) => sum + c.votes, 0);
 
@@ -1034,12 +1041,11 @@ const PollList = ({ allPolls }) => {
 // Main Admin Panel Component (With Tabs)
 const AdminPanel = () => {
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('payments'); // Default to the most critical tab
+  const [activeTab, setActiveTab] = useState('payments'); 
   const [allPolls, setAllPolls] = useState([]);
   const [loadingPolls, setLoadingPolls] = useState(true);
 
   useEffect(() => {
-    // Real-time listener for all polls
     const pollsCol = collection(db, "polls");
     const unsubscribe = onSnapshot(pollsCol, (snapshot) => {
       const pollsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1107,7 +1113,6 @@ const AdminPanel = () => {
 const App = () => {
   const { user, isAdmin, loading } = useAuth();
 
-  // Determine the default route based on auth/role state
   let defaultHome = '/';
   if (user && isAdmin) {
     defaultHome = '/admin';
