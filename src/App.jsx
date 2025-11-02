@@ -60,16 +60,16 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// EXPORT useAuth to be accessible by AuthScreen and others
 export const useAuth = () => useContext(AuthContext);
 
 
-// --- 3. GLOBAL UI CONSTANTS & STYLES (New Sleek Aesthetic) ---
+// --- 3. GLOBAL UI CONSTANTS & STYLES (Adjusted Dark Gradient) ---
 const ACCENT_PURPLE = '#a020f0'; // Primary Purple accent
 const ACCENT_MAGENTA = '#c71585'; // Secondary accent for gradient
-const BACKGROUND_DARK = '#0a0a0a'; // Deepest background
+const BACKGROUND_DEEP = '#000000'; // Deepest background (pure black)
 const CARD_DARK = '#151515'; // Card background color
 const BORDER_COLOR = '#333';
+const GRADIENT_START = '#0a0a0a'; // Dark color for top gradient on elements
 
 const baseStyles = {
     inputField: {
@@ -77,7 +77,7 @@ const baseStyles = {
         padding: '14px 15px',
         borderRadius: '10px',
         border: `1px solid ${BORDER_COLOR}`,
-        background: BACKGROUND_DARK,
+        background: BACKGROUND_DEEP,
         color: '#e0e0e0',
         boxSizing: 'border-box',
         fontSize: '16px',
@@ -114,7 +114,7 @@ const styles = {
   // Main Container
   appContainer: {
     minHeight: '100vh',
-    background: BACKGROUND_DARK,
+    background: BACKGROUND_DEEP, // Using the deep black
     color: '#e0e0e0',
     fontFamily: 'system-ui, sans-serif',
     padding: 0,
@@ -127,11 +127,11 @@ const styles = {
   authLayout: {
     minHeight: '100vh',
     display: 'flex',
-    background: BACKGROUND_DARK,
+    background: BACKGROUND_DEEP,
   },
   imagePanel: {
     flex: 1,
-    display: window.innerWidth > 900 ? 'flex' : 'none', // Larger breakpoint for image display
+    display: window.innerWidth > 900 ? 'flex' : 'none',
     justifyContent: 'center',
     alignItems: 'center',
     background: '#1a1a1a', 
@@ -144,7 +144,6 @@ const styles = {
     objectFit: 'contain',
     borderRadius: '15px',
     boxShadow: `0 0 40px rgba(160, 32, 240, 0.5)`,
-    animation: 'pulse 3s infinite alternate', // Subtle visual interest
   },
   formPanel: {
     flex: window.innerWidth > 900 ? 1 : 'none',
@@ -159,18 +158,22 @@ const styles = {
     maxWidth: '420px',
     padding: '40px',
     borderRadius: '20px',
-    background: CARD_DARK,
+    // Applying the dark gradient effect here
+    background: `linear-gradient(145deg, ${GRADIENT_START}, ${CARD_DARK})`,
     boxShadow: `0 10px 30px rgba(0, 0, 0, 0.9)`,
     textAlign: 'center',
-    border: `1px solid ${BORDER_COLOR}`,
+    border: `1px solid ${ACCENT_PURPLE}`, // Border accent
   },
   inputField: baseStyles.inputField,
   primaryButton: baseStyles.gradientButton,
   errorText: baseStyles.errorText,
   textLink: {
-    ...baseStyles.textLink,
+    color: ACCENT_PURPLE,
+    cursor: 'pointer',
     textDecoration: 'underline',
     marginTop: '30px',
+    fontSize: '15px',
+    fontWeight: '600',
   },
 
   // --- DASHBOARD/POLL STYLES ---
@@ -180,7 +183,8 @@ const styles = {
     padding: '0 15px',
   },
   pollCard: {
-    background: CARD_DARK,
+    // Applying the dark gradient effect here
+    background: `linear-gradient(145deg, ${GRADIENT_START}, ${CARD_DARK})`,
     borderRadius: '15px',
     padding: '25px',
     marginBottom: '30px',
@@ -204,7 +208,7 @@ const styles = {
     borderRadius: '10px',
     marginBottom: '12px',
     cursor: 'pointer',
-    background: isSelected ? ACCENT_MAGENTA : '#2a2a2a',
+    background: isSelected ? ACCENT_MAGENTA : '#1a1a1a', // Darker background for candidate items
     boxShadow: isSelected ? '0 0 15px rgba(160, 32, 240, 0.5)' : 'none',
     transition: 'all 0.3s ease',
     border: isSelected ? `2px solid #fff` : `1px solid ${BORDER_COLOR}`,
@@ -215,11 +219,11 @@ const styles = {
     borderRadius: '50%',
     objectFit: 'cover',
     marginRight: '15px',
-    border: `3px solid ${BACKGROUND_DARK}`,
+    border: `3px solid ${BACKGROUND_DEEP}`,
   },
   // Logout Button Override
   logoutButton: {
-    background: BACKGROUND_DARK, 
+    background: BACKGROUND_DEEP, 
     color: '#ff6b6b', 
     border: `1px solid #ff6b6b`, 
     padding: '8px 15px', 
@@ -235,7 +239,8 @@ const styles = {
     margin: '30px auto',
     padding: '30px',
     borderRadius: '15px',
-    background: CARD_DARK,
+    // Applying the dark gradient effect here
+    background: `linear-gradient(145deg, ${GRADIENT_START}, ${CARD_DARK})`,
     boxShadow: `0 10px 30px rgba(0, 0, 0, 0.7)`,
     minHeight: '80vh',
     border: `1px solid ${BORDER_COLOR}`,
@@ -264,11 +269,13 @@ const styles = {
     borderRadius: '10px',
     marginBottom: '20px',
     borderLeft: `3px solid #ffeb3b`,
+    // Subtle gradient on approval items
+    background: `linear-gradient(145deg, #101010, #1a1a1a)`,
   },
 };
 
 
-// --- 4. LOGIN / SIGNUP COMPONENT (New Split-Screen UI) ---
+// --- 4. LOGIN / SIGNUP COMPONENT ---
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -297,7 +304,6 @@ const AuthScreen = () => {
         const userCredential = await signup(email, password);
         const user = userCredential.user;
         
-        // Save user data to Firestore
         await setDoc(doc(db, "users", user.uid), {
           email: email,
           matricNumber: matricNumber.trim().toUpperCase(),
@@ -326,7 +332,6 @@ const AuthScreen = () => {
     <div style={styles.authLayout}>
         {/* Left Side: Image Panel */}
         <div style={styles.imagePanel}>
-            {/* Image.png must be placed in the public folder */}
             <img src="/image.png" alt="NAOTEMS Poll Banner" style={styles.image} />
         </div>
 
@@ -396,8 +401,8 @@ const AuthScreen = () => {
 
 // --- 5. PRIVATE ROUTE COMPONENTS ---
 const LoadingOverlay = ({ message }) => (
-    <div style={styles.loadingOverlay}>
-      <BeatLoader color={ACCENT_PURPLE} size={20} /> <p>{message}</p>
+    <div style={{...styles.appContainer, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', zIndex: 9999}}>
+      <BeatLoader color={ACCENT_PURPLE} size={20} /> <p style={{marginTop: '15px'}}>{message}</p>
     </div>
 );
 
@@ -415,7 +420,7 @@ const AdminRoute = ({ children }) => {
 };
 
 
-// --- 6. STUDENT DASHBOARD COMPONENTS (New UI Applied) ---
+// --- 6. STUDENT DASHBOARD COMPONENTS ---
 
 // Student Sub-Component: Payment Modal
 const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
@@ -479,7 +484,7 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
 
   return (
     <div style={{position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000}}>
-      <div style={{width: '90%', maxWidth: '400px', background: CARD_DARK, padding: '30px', borderRadius: '20px', boxShadow: `0 10px 30px rgba(160, 32, 240, 0.5)`, textAlign: 'center', border: `1px solid ${ACCENT_PURPLE}`}}>
+      <div style={{width: '90%', maxWidth: '400px', background: styles.authCard.background, padding: '30px', borderRadius: '20px', boxShadow: styles.authCard.boxShadow, textAlign: 'center', border: `1px solid ${ACCENT_PURPLE}`}}>
         <h2 style={{ color: '#fff', borderBottom: `1px solid ${BORDER_COLOR}`, paddingBottom: '15px' }}>
             <span style={{color: ACCENT_PURPLE}}>VERIFY</span> YOUR VOTE
         </h2>
@@ -487,7 +492,7 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
           Your vote needs payment approval to be counted.
         </p>
 
-        <div style={{ background: BACKGROUND_DARK, padding: '15px', borderRadius: '10px', marginBottom: '20px', border: `1px solid ${BORDER_COLOR}` }}>
+        <div style={{ background: BACKGROUND_DEEP, padding: '15px', borderRadius: '10px', marginBottom: '20px', border: `1px solid ${BORDER_COLOR}` }}>
           <p style={{ fontWeight: 'bold', color: ACCENT_PURPLE, marginBottom: '5px' }}>PAYMENT DETAILS</p>
           <p style={{ fontSize: '14px', color: '#ccc' }}>**Fee:** {paymentDetails.amount}</p>
           <p style={{ fontSize: '14px', color: '#ccc' }}>**Account:** {paymentDetails.accountNumber}</p>
@@ -515,8 +520,7 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
 
         <button 
           onClick={handleFileUpload} 
-          // Custom Green Gradient Button for action
-          style={{...styles.primaryButton, background: `linear-gradient(145deg, #4cd964, #34c759)`, color: BACKGROUND_DARK, boxShadow: '0 4px 10px rgba(76, 217, 100, 0.3)'}}
+          style={{...styles.primaryButton, background: `linear-gradient(145deg, #4cd964, #34c759)`, color: BACKGROUND_DEEP, boxShadow: '0 4px 10px rgba(76, 217, 100, 0.3)'}}
           disabled={uploading || !screenshotFile}
         >
           {uploading ? <BeatLoader size={10} color="#0a0a0a" /> : 'Submit Proof for Approval'}
@@ -531,6 +535,20 @@ const PaymentModal = ({ pollId, candidateId, studentId, onClose }) => {
     </div>
   );
 };
+
+// Status text utility
+const getStatusTextStyle = (status) => {
+    let color = '#ccc';
+    if (status === 'pending_payment' || status === 'pending_approval') color = '#ffeb3b'; 
+    if (status === 'approved') color = '#4cd964'; 
+    if (status === 'rejected') color = '#ff6b6b';
+    return {
+      fontSize: '14px',
+      fontWeight: 'bold',
+      color: color,
+      textAlign: 'left',
+    };
+  };
 
 // Student Dashboard Main Component
 const StudentDashboard = () => {
@@ -631,8 +649,8 @@ const StudentDashboard = () => {
             return (
               <div key={poll.id} style={styles.pollCard}>
                 <h2 style={styles.pollTitle}>{poll.title}</h2>
-                <p style={{...styles.voteStatusText(voteStatus), marginBottom: '20px', textAlign: 'left', fontWeight: '700'}}>
-                  CURRENT STATUS: {voteStatus.replace(/_/g, ' ').toUpperCase()}
+                <p style={{...getStatusTextStyle(voteStatus), marginBottom: '20px', textAlign: 'left', fontWeight: '700'}}>
+                  STATUS: {voteStatus.replace(/_/g, ' ').toUpperCase()}
                 </p>
                 
                 {poll.candidates.map(candidate => (
@@ -660,7 +678,7 @@ const StudentDashboard = () => {
                       setCandidateToPay(voteData.candidateId);
                       setShowPaymentModal(true);
                     }}
-                    style={{...styles.primaryButton, marginTop: '20px', background: `linear-gradient(145deg, #ffeb3b, #ffa000)`, color: BACKGROUND_DARK, boxShadow: '0 4px 10px rgba(255, 165, 0, 0.3)'}}
+                    style={{...styles.primaryButton, marginTop: '20px', background: `linear-gradient(145deg, #ffeb3b, #ffa000)`, color: BACKGROUND_DEEP, boxShadow: '0 4px 10px rgba(255, 165, 0, 0.3)'}}
                   >
                     Upload Payment Proof
                   </button>
@@ -684,7 +702,7 @@ const StudentDashboard = () => {
 };
 
 
-// --- 7. ADMIN PANEL COMPONENTS (New UI Applied) ---
+// --- 7. ADMIN PANEL COMPONENTS ---
 const CreatePoll = ({ setAllPolls }) => {
   const [pollTitle, setPollTitle] = useState('');
   const [candidates, setCandidates] = useState([{ name: '', imageFile: null, imageUrl: '' }]);
@@ -787,7 +805,7 @@ const CreatePoll = ({ setAllPolls }) => {
             placeholder="E.g., Which candidate should win?"
             value={pollTitle}
             onChange={(e) => setPollTitle(e.target.value)}
-            style={{...styles.inputField, marginBottom: '20px'}}
+            style={{...styles.inputField, marginBottom: '20px', background: CARD_DARK}}
             required
           />
         </div>
@@ -795,9 +813,9 @@ const CreatePoll = ({ setAllPolls }) => {
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{display: 'block', marginBottom: '15px', fontWeight: '600', color: '#ccc'}}>Candidates (Option & Picture)</label>
           {candidates.map((candidate, index) => (
-            <div key={index} style={{display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'center', background: '#1a1a1a', padding: '10px', borderRadius: '10px'}}>
+            <div key={index} style={{display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'center', background: '#1a1a1a', padding: '10px', borderRadius: '10px', border: `1px solid ${BORDER_COLOR}`}}>
               {candidate.imageUrl && (
-                <img src={candidate.imageUrl} alt="Candidate Preview" style={{width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${ACCENT_PURPLE}`}} />
+                <img src={candidate.imageUrl} alt="Candidate Preview" style={{width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', marginRight: '10px', border: `2px solid ${ACCENT_PURPLE}`}} />
               )}
               
               <input
@@ -805,11 +823,11 @@ const CreatePoll = ({ setAllPolls }) => {
                 placeholder={`Candidate ${index + 1} Name`}
                 value={candidate.name}
                 onChange={(e) => handleCandidateNameChange(index, e.target.value)}
-                style={{...styles.inputField, marginBottom: 0, flexGrow: 1}}
+                style={{...styles.inputField, marginBottom: 0, flexGrow: 1, background: BACKGROUND_DEEP}}
                 required
               />
 
-              <label style={{...styles.fileInputLabel, background: ACCENT_PURPLE, padding: '10px 15px', borderRadius: '5px'}}>
+              <label style={{...styles.fileInputLabel, background: ACCENT_PURPLE, padding: '10px 15px', borderRadius: '5px', cursor: 'pointer', flexShrink: 0}}>
                 <input
                   type="file"
                   accept="image/*"
@@ -833,7 +851,7 @@ const CreatePoll = ({ setAllPolls }) => {
           <button 
             type="button" 
             onClick={addCandidate} 
-            style={{...styles.primaryButton, background: '#4cd964', color: BACKGROUND_DARK, boxShadow: '0 4px 10px rgba(76, 217, 100, 0.3)', marginTop: '5px'}}
+            style={{...styles.primaryButton, background: '#4cd964', color: BACKGROUND_DEEP, boxShadow: '0 4px 10px rgba(76, 217, 100, 0.3)', marginTop: '5px'}}
           >
             + ADD CANDIDATE
           </button>
@@ -950,13 +968,13 @@ const PaymentApproval = ({ allPolls }) => {
 
             <h4 style={{marginTop: '10px', color: '#ffeb3b'}}>Proof:</h4>
             <a href={vote.screenshotURL} target="_blank" rel="noopener noreferrer">
-                <img src={vote.screenshotURL} alt="Payment Proof" style={{width: '100%', maxHeight: '250px', objectFit: contain, borderRadius: '8px', border: `1px solid ${ACCENT_PURPLE}`, margin: '5px 0 15px 0'}} />
+                <img src={vote.screenshotURL} alt="Payment Proof" style={{width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '8px', border: `1px solid ${ACCENT_PURPLE}`, margin: '5px 0 15px 0'}} />
             </a>
 
             <div style={{display: 'flex', justifyContent: 'space-between', gap: '15px', marginTop: '10px'}}>
               <button 
                 onClick={() => handleApproval(vote, true)}
-                style={{...styles.primaryButton, flexGrow: 1, background: '#4cd964', color: BACKGROUND_DARK, boxShadow: 'none', padding: '10px'}}
+                style={{...styles.primaryButton, flexGrow: 1, background: '#4cd964', color: BACKGROUND_DEEP, boxShadow: 'none', padding: '10px'}}
               >
                 APPROVE
               </button>
